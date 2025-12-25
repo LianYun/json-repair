@@ -1,3 +1,3 @@
-module github.com/RealAlexandreAI/json-repair
+module github.com/LianYun/json-repair
 
-go 1.21
+go 1.24
