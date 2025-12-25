@@ -341,7 +341,7 @@ func (p *JSONParser) parseString() any {
 		} else {
 			i = 1
 			nextC, nextB = p.getByte(i)
-			for nextB && nextC == ' ' {
+			for nextB && (nextC == ' ' || nextC == '\n' || nextC == '\r') {
 				i++
 				nextC, nextB = p.getByte(i)
 			}
@@ -571,6 +571,7 @@ func (p *JSONParser) parseNumber() any {
 
 	switch {
 	case len(rst) == 0:
+		p.index++
 		return p.parseJSON()
 	case bytes.IndexByte(rst, ',') != -1:
 		return string(rst)

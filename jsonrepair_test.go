@@ -298,6 +298,15 @@ func Test_RepairJSON(t *testing.T) {
 	]`,
 			want: `[{"Master":"господин"}]`,
 		},
+		{
+			in: `
+{
+  "Be": "",
+  "gone": "" 
+}
+",п"г`,
+			want: `{"Be":"","gone":""}`,
+		},
 	}
 
 	caseNo := 1
@@ -341,4 +350,22 @@ func jsonStringsEqual(jsonStr1, jsonStr2 string) bool {
 	}
 
 	return reflect.DeepEqual(jsonObj, jsonObj2)
+}
+
+func TestBadCase(t *testing.T) {
+	text := `
+{
+  "Be": "",
+  "gone": "" 
+}
+",п"г`
+	got, err := RepairJSON(text)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := `{"Be":"","gone":""}`
+	if !jsonStringsEqual(got, want) {
+		t.Errorf("RepairJSON() = %v, want %v, param in is %v", got, want, text)
+	}
 }
