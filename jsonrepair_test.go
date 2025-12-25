@@ -363,7 +363,6 @@ func TestBadCase(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	want := `{"Be":"","gone":""}`
 	if !jsonStringsEqual(got, want) {
 		t.Errorf("RepairJSON() = %v, want %v, param in is %v", got, want, text)

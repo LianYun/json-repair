@@ -11,6 +11,8 @@ import (
 	"unicode"
 )
 
+const MaxStack = 4096
+
 // RepairJSON
 //
 //	@Description:
@@ -21,7 +23,7 @@ func RepairJSON(src string) (dst string, err error) {
 	defer func() {
 		if errR := recover(); errR != nil {
 			stack := string(debug.Stack())
-			err = fmt.Errorf("repair json panic: %s", stack)
+			err = fmt.Errorf("repair json panic: err= %s, stack=%s", errR, stack)
 			return
 		}
 	}()
@@ -93,6 +95,15 @@ type JSONParser struct {
 	container string
 	index     int
 	marker    []string
+	stack     int
+}
+
+func (p *JSONParser) StackCheck() {
+	p.stack++
+	if p.stack > MaxStack {
+		errStr := fmt.Sprintf("exceed max stack setting. raw_str= %s, stack= %d(%d)", p.container, p.stack, MaxStack)
+		panic(errStr)
+	}
 }
 
 // parseJSON
@@ -101,7 +112,7 @@ type JSONParser struct {
 //	receiver p
 //	return any
 func (p *JSONParser) parseJSON() any {
-
+	p.StackCheck()
 	for {
 		c, b := p.getByte(0)
 
@@ -139,6 +150,7 @@ func (p *JSONParser) parseJSON() any {
 //	return map[string]any
 func (p *JSONParser) parseObject() map[string]any {
 
+	p.StackCheck()
 	rst := make(map[string]any)
 
 	var c byte
@@ -221,6 +233,7 @@ func (p *JSONParser) parseObject() map[string]any {
 //	receiver p
 //	return []any
 func (p *JSONParser) parseArray() []any {
+	p.StackCheck()
 
 	rst := make([]any, 0)
 
@@ -281,7 +294,7 @@ func (p *JSONParser) parseArray() []any {
 //	param quotes
 //	return any
 func (p *JSONParser) parseString() any {
-
+	p.StackCheck()
 	var missingQuotes, doubledQuotes = false, false
 	var lStringDelimiter, rStringDelimiter byte = '"', '"'
 
@@ -546,6 +559,7 @@ func (p *JSONParser) parseString() any {
 //	receiver p
 //	return any
 func (p *JSONParser) parseNumber() any {
+	p.StackCheck()
 	var rst []byte
 
 	numberChars := []byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.', 'e', 'E', '/', ','}
@@ -594,6 +608,8 @@ func (p *JSONParser) parseNumber() any {
 //	receiver p
 //	return any
 func (p *JSONParser) parseBooleanOrNull() any {
+
+	p.StackCheck()
 
 	startingIndex := p.index
 
